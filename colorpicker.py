@@ -30,8 +30,45 @@ def getMaxPad(array,offset=0):
             maxLen = len(a)
     return (tWidth-(maxLen+offset))//2*' '
 
-rgb = [random.randint(1,255) for _ in range(3)]
+def printLines(index=None,value=None):
+    padding = getMaxPad(rows,2)
+    midPad = max(len(l) for l in rows)*' '
+    noColor = False
+
+    localRGB = rgb
+    if not any(v == None for v in [index,value]):
+        if value == '':
+            noColor = True
+        else:
+            localRGB[index] = int(value)
+
+    for i,row in enumerate(rows):
+        colVal = localRGB[i]
+
+        if noColor:
+            col = ''
+        else:
+            # for rgb ansi escape codes
+            col = '\033[38;2'
+            for index in range(3):
+                if i == index:
+                    col += f';{colVal}'
+                else:
+                    col += ';0'
+            col += f'm{colVal}'
+            
+        hi = ('\033[30;47m' if selection == i else '')
+        print('\033[K'+'\033[1m'+padding+hi+row+': '+midPad[len(row)-2:]+col+'\033[0m')
+
+    # print hex
+    hexVal = "".join([format(val, '02X') for val in localRGB])
+    color = ''.join([';'+str(v) for v in localRGB])+'m'
+    print(padding+'\033[1m'+'hex: #'+'\033[38;2'+color+hexVal)
+    print('\033[0m')
+ 
+
 rows = ['red','green','blue']
+rgb = [random.randint(1,255) for _ in range(3)]
 selection = 0
 keys = getkey.keys
 
@@ -40,29 +77,8 @@ while 1:
     print('\n')
     
     # print rows
-    padding = getMaxPad(rows,2)
-    midPad = max(len(l) for l in rows)*' '
-    for i,row in enumerate(rows):
-        colVal = rgb[i]
+    printLines()
 
-        # for rgb ansi escape codes
-        col = '\033[38;2'
-        for index in range(3):
-            if i == index:
-                col += f';{colVal}'
-            else:
-                col += ';0'
-        col += f'm{colVal}'
-            
-        hi = ('\033[30;47m' if selection == i else '')
-        print('\033[K'+padding+hi+row+': '+midPad[len(row)-2:]+col+'\033[0m')
-
-    # print hex
-    hexVal = "".join([format(val, '02X') for val in rgb])
-    color = ''.join([';'+str(v) for v in rgb])+'m'
-    print(padding+'hex: #'+'\033[38;2'+color+hexVal)
-    print('\033[0m')
-    
     # get, handle input
     key = getkey.getkey()
 
@@ -81,3 +97,21 @@ while 1:
     # left
     elif key in ['h',keys.LEFT]:
         rgb[selection] = max(0,rgb[selection]-1)
+
+    elif key.isdigit():
+        newVal = key
+        while not key == keys.ENTER:
+            if key == keys.BACKSPACE:
+                newVal = newVal[:-1]
+
+            print('\033[6A')
+
+            printLines(selection,newVal)
+            key = getkey.getkey()
+            if not key == keys.BACKSPACE and key.isdigit() and int(newVal+key) <= 255:
+                newVal += key
+        try:
+            rgb[selection] = int(newVal)
+        except ValueError:
+            # professional coding trick
+            pass
