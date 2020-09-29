@@ -58,12 +58,12 @@ def printLines(index=None,value=None):
             col += f'm{colVal}'
             
         hi = ('\033[30;47m' if selection == i else '')
-        print('\033[K'+'\033[1m'+padding+hi+row+': '+midPad[len(row)-2:]+col+'\033[0m')
+        print('\033[K'+padding+hi+row+': '+midPad[len(row)-2:]+col+'\033[0m')
 
     # print hex
     hexVal = "".join([format(val, '02X') for val in localRGB])
     color = ''.join([';'+str(v) for v in localRGB])+'m'
-    print(padding+'\033[1m'+'hex: #'+'\033[38;2'+color+hexVal)
+    print(padding+'hex: #'+'\033[38;2'+color+hexVal)
     print('\033[0m')
  
 
